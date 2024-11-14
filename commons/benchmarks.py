@@ -12,6 +12,8 @@ class BenchmarkDataset:
     subtasks: List = field(default_factory=list)
     sample_size : int = 100
     seed : int = 42
+    ANSWER_TOKEN_IDX_START = 49
+    CHOICES : List = ["A", "B", "C", "D"]
 
     def __post_init__(self):
         self.dataset = load_dataset(self.name, "all")
@@ -91,7 +93,7 @@ class BenchmarkDataset:
             # predicted answer is the same as the ground truth answer. i.e. before, I had a typo and
             # I was comparing the predicted answer to " A", " B", " C", " D" instead of "A", "B", "C", "D"
 
-            for example in tqdm(sampled_subset):
+            for example in tqdm(sampled_subset, desc=f"Evaluating - So far gotten {correct} out of {total}"):
                 # Format the question and choices into a single prompt
                 prompt = self._format_example(example)
                 
@@ -109,8 +111,9 @@ class BenchmarkDataset:
                     logits = outputs.logits[:, -1, :]  # Last token's logits
                     log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
 
-                for idx in range(4):
-                    choice_token = f"{chr(65 + idx)}"  # " A", " B", " C", " D"
+                # for idx in range(4):
+                # choice_token = f"{chr(self.ANSWER_TOKEN_IDX_START + idx)}"  # " A", " B", " C", " D"
+                for choice_token in self.CHOICES:
                     choice_ids = self.tokenizer(choice_token, return_tensors="pt")["input_ids"]
                         
                     # Get log probability for the specific choice (A, B, C, or D)
@@ -119,7 +122,7 @@ class BenchmarkDataset:
 
                 # Determine the predicted choice
                 predicted_choice_idx = torch.tensor(choice_log_probs).argmax().item()
-                predicted_choice = chr(65 + predicted_choice_idx)
+                predicted_choice = chr(self.ANSWER_TOKEN_IDX_START + predicted_choice_idx)
 
                 # Check if prediction is correct
                 correct_answer = example["answer"]
