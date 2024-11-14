@@ -55,8 +55,18 @@ class BenchmarkDataset:
         """
         question = example['question']
         choices = [example[f'choices'][i] for i in range(4)]
-        formatted = f"{question}\nA) {choices[0]}\nB) {choices[1]}\nC) {choices[2]}\nD) {choices[3]}\nAnswer:"
-        return formatted
+        prompt = f''''{question}
+
+            CHOICES:
+            A) {choices[0]}
+            B) {choices[1]}
+            C) {choices[2]}
+            D) {choices[3]}
+
+            Please select the correct answer by providing only the corresponding letter (A, B, C, or D).
+            ANSWER:
+            '''
+        return prompt
 
     def _encode(self, examples):
             """
