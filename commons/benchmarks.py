@@ -115,22 +115,18 @@ class BenchmarkDataset:
                     logits = outputs.logits[:, -1, :]  # Last token's logits
                     log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
 
-                # for idx in range(4):
-                # choice_token = f"{chr(self.ANSWER_TOKEN_IDX_START + idx)}"  # " A", " B", " C", " D"
-                for choice_token in self.CHOICES:
-                    choice_ids = self.tokenizer(choice_token, return_tensors="pt")["input_ids"]
-                        
+                for choice in self.CHOICES:
                     # Get log probability for the specific choice (A, B, C, or D)
-                    choice_log_prob = log_probs[0, choice_ids[0, 0]].item()
+                    choice_log_prob = log_probs[0, self.choice_ids_mapping[choice]].item()
                     choice_log_probs.append(choice_log_prob)
 
-                # Determine the predicted choice
+                # Determine the predicted choice, by computing the arg max of hte 
+                # log probs we just built. This is very greedy (we don't sample, just take the max logprob)
                 predicted_choice_idx = torch.tensor(choice_log_probs).argmax().item()
-                predicted_choice = chr(self.ANSWER_TOKEN_IDX_START + predicted_choice_idx)
 
                 # Check if prediction is correct
                 correct_answer = example["answer"]
-                if predicted_choice == correct_answer:
+                if predicted_choice_idx == correct_answer:
                     correct += 1
                 total += 1
 
