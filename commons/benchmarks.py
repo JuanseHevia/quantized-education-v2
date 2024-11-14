@@ -12,8 +12,7 @@ class BenchmarkDataset:
     subtasks: List = field(default_factory=list)
     sample_size : int = 100
     seed : int = 42
-    ANSWER_TOKEN_IDX_START = 49
-    CHOICES : List = ["A", "B", "C", "D"]
+    CHOICES = ["A", "B", "C", "D"]
 
     def __post_init__(self):
         self.dataset = load_dataset(self.name, "all")
@@ -21,6 +20,7 @@ class BenchmarkDataset:
             self.dataset = self.dataset.filter(lambda x: x["subject"] in self.subtasks)
         
         self.test_set = self.dataset['test'].shuffle(seed=self.seed)
+
 
 
     def load_model(self, hf_path):
@@ -35,7 +35,11 @@ class BenchmarkDataset:
         """
         self.tokenizer = AutoTokenizer.from_pretrained(hf_path)
         self.model = AutoModelForCausalLM.from_pretrained(hf_path)
-
+        # store the choice IDs based on the chosen tokenizer
+        self.choice_ids_mapping = {}
+        for choice_token in self.CHOICES:
+            choice_ids = self.tokenizer(choice_token, return_tensors="pt")["input_ids"]
+            self.choice_ids_mapping[choice_token] = choice_ids[0,0]
 
     @staticmethod
     def _format_example(example):
