@@ -5,6 +5,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from .model import ConversationModel
 from dataclasses import dataclass, field
+from commons.retrieval import Retriever
 
 @dataclass
 class BenchmarkDataset:
@@ -23,7 +24,7 @@ class BenchmarkDataset:
 
 
 
-    def load_model(self, hf_path):
+    def load_model(self, hf_path, rag=False, pdf_path=None):
         """
         Load the tokenizer and model from the given Hugging Face path.
 
@@ -35,14 +36,18 @@ class BenchmarkDataset:
         """
         self.tokenizer = AutoTokenizer.from_pretrained(hf_path)
         self.model = AutoModelForCausalLM.from_pretrained(hf_path)
+        self.rag = rag
         # store the choice IDs based on the chosen tokenizer
         self.choice_ids_mapping = {}
         for choice_token in self.CHOICES:
             choice_ids = self.tokenizer(choice_token, return_tensors="pt")["input_ids"]
             self.choice_ids_mapping[choice_token] = choice_ids[0,0]
+        
+        if rag:
+            self.rag_pipeline = Retriever(pdf_path)
+            print("RAG pipeline loaded successfully.")
 
-    @staticmethod
-    def _format_example(example):
+    def _format_example(self,example):
         """
         Formats an example dictionary into a string representation.
 
@@ -66,6 +71,11 @@ class BenchmarkDataset:
             Please select the correct answer by providing only the corresponding letter (A, B, C, or D).
             ANSWER:
             '''
+        if self.rag:
+            initial_context = f''' From this information as a context:
+            {example['context']}'''
+            prompt = initial_context + prompt
+        
         return prompt
 
     def _encode(self, examples):
@@ -108,8 +118,13 @@ class BenchmarkDataset:
             # I was comparing the predicted answer to " A", " B", " C", " D" instead of "A", "B", "C", "D"
 
             for example in tqdm(sampled_subset, desc=f"Evaluating - So far gotten {correct} out of {total}"):
+                print(example)
                 # Format the question and choices into a single prompt
+                if self.rag:
+                    example['context'] = self.rag_pipeline.retrieve_documents(example['question'])
                 prompt = self._format_example(example)
+                
+                
                 
                 # Tokenize the prompt
                 inputs = self.tokenizer(prompt, return_tensors="pt")

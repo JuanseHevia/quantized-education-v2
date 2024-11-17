@@ -14,7 +14,7 @@ importlib.reload(model)
 
 class Retriever:
     def __init__(self, pdf_path,
-                 chunk_size=500,
+                 chunk_size=300,
                  embedder_model='sentence-transformers/all-MiniLM-L6-v2',
                  device="cpu",
                  top_k=2):

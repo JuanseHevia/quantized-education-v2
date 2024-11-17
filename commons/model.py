@@ -1,5 +1,5 @@
 from typing import List
-import mlx_lm
+#import mlx_lm
 import dataclasses
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
@@ -30,7 +30,7 @@ class ConversationModel:
     device: str = "mps"
     messages: List = dataclasses.field(default_factory=list)
     temperature : float = 0.99
-    max_tokens : int = 512
+    max_tokens : int = 1024
     anchor_prompt : str = None
 
     def __post_init__(self):
