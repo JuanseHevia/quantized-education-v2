@@ -49,10 +49,11 @@ def process_pdf_doc(path:str, summarize: bool=False):
     # add IDs 
     ids = [str(idx) for idx in list(range(len(chunks)))]
 
-    collection.add(
-        documents=chunks,
-        ids=ids,
-    )
+    # add chunks to collection
+    for chunk_id, chunk in tqdm(zip(ids, chunks), total=len(chunks)):
+        # TODO: we can add metadata to this chunks, esto es genial
+        collection.add(documents=[chunk],
+                       ids=[chunk_id],)
 
     print(f"Added {len(chunks)} chunks from {os.path.basename(path)}!")
 
