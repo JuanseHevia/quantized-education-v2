@@ -96,4 +96,3 @@ if __name__ == "__main__":
         process_pdf_doc(os.path.join(DATA_PATH, bookname))
 
     print("Database built successfully!")
-    print("Number of documents in collection: ", collection.get_document_count())

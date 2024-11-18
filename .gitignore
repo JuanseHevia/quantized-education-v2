@@ -1,2 +1,3 @@
 *.pdf
 *.sqlite3
+rag/knowledgebase/*
