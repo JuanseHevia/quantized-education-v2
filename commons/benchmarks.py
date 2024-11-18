@@ -72,10 +72,10 @@ class BenchmarkDataset:
             ANSWER:
             '''
         if self.rag:
+            context = example['context']
             initial_context = f''' From this information as a context:
-            {example['context']}'''
+            {context}'''
             prompt = initial_context + prompt
-        
         return prompt
 
     def _encode(self, examples):
@@ -118,7 +118,6 @@ class BenchmarkDataset:
             # I was comparing the predicted answer to " A", " B", " C", " D" instead of "A", "B", "C", "D"
 
             for example in tqdm(sampled_subset, desc=f"Evaluating - So far gotten {correct} out of {total}"):
-                print(example)
                 # Format the question and choices into a single prompt
                 if self.rag:
                     example['context'] = self.rag_pipeline.retrieve_documents(example['question'])
