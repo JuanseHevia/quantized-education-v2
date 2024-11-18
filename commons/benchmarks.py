@@ -3,7 +3,6 @@ from datasets import load_dataset
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-from .model import ConversationModel
 from dataclasses import dataclass, field
 from commons.retrieval import Retriever
 
