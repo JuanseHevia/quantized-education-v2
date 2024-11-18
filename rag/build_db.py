@@ -33,15 +33,12 @@ def initialize_collection(kb_path:str , distance_fn='cosine', embedding_fn=embed
                                                  metadata={"hnsw:space": distance_fn}) 
     return collection
 
-
-
-def process_pdf_doc(path:str, summarize: bool=False):
+def process_pdf_doc(chunks, summarize: bool=False):
     """
     Load PDF function and split in chunks.
     Optionally, summarize the content
     """
 
-    chunks = extract_text_from_pdf(path)
     if summarize:
         # TODO: implement LLM based summarization
         raise NotImplementedError("Summarization not implemented yet")
@@ -82,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_path", type=str, default="./data")
     parser.add_argument("--kb_path", type=str, default="./knowledgebase")
     parser.add_argument("--distance_fn", type=str, default="cosine")
-
+    parser.add_argument("--chunk_size", type=int, default=500)
     # parse arguments
     args = parser.parse_args()
 
@@ -90,9 +87,13 @@ if __name__ == "__main__":
     booknames = [name for name in os.listdir(args.data_path) if name.endswith(".pdf")]
     print("Number of documents found: ", len(booknames))
 
+    # get chunks
+
     collection = initialize_collection(kb_path=args.kb_path,
                                        distance_fn=args.distance_fn)
     for bookname in booknames:
-        process_pdf_doc(os.path.join(DATA_PATH, bookname))
+        chunks = extract_text_from_pdf(os.path.join(DATA_PATH, bookname),
+                                        chunk_size=args.chunk_size)
+        process_pdf_doc(chunks=chunks)
 
     print("Database built successfully!")
