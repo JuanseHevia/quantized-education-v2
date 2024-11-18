@@ -72,10 +72,15 @@ class BenchmarkDataset:
             ANSWER:
             '''
         if self.rag:
-            context = example['context']
-            initial_context = f''' From this information as a context:
-            {context}'''
-            prompt = initial_context + prompt
+            context = '\n'.join(example['context'])
+            context_add = f'''\n
+            USE THIS INFORMATION TO HELP YOU ANSWER THE QUESTION:\n
+            {context}
+            '''
+            prompt = prompt + context_add
+
+        prompt += "\nANSWER:"
+
         return prompt
 
     def _encode(self, examples):
