@@ -8,20 +8,20 @@ AVAILABLE_HFS = [
     "HuggingFaceTB/SmolLM2-1.7B-Instruct"
 ]
 
-@dataclasses.dataclass
-class MlxModel:
-    hf_path: str
+# @dataclasses.dataclass
+# class MlxModel:
+#     hf_path: str
 
-    def load_model(self):
-        # Load the model from hf_path
-        model, tokenizer = mlx_lm.load(self.hf_path)
-        self.model = model
-        self.tokenizer = tokenizer
+#     def load_model(self):
+#         # Load the model from hf_path
+#         model, tokenizer = mlx_lm.load(self.hf_path)
+#         self.model = model
+#         self.tokenizer = tokenizer
 
-    def generate(self, prompt: str, verbose: bool = False):
-        return mlx_lm.generate(self.model, self.tokenizer,
-                               prompt,
-                               verbose=verbose)
+#     def generate(self, prompt: str, verbose: bool = False):
+#         return mlx_lm.generate(self.model, self.tokenizer,
+#                                prompt,
+#                                verbose=verbose)
     
 @dataclasses.dataclass
 class ConversationModel:
