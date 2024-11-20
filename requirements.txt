@@ -24,3 +24,4 @@ pymupdf
 faiss-cpu 
 transformers 
 sentence-transformers
+chromadb
