@@ -131,8 +131,10 @@ class BenchmarkDataset:
                 
                 # Pass through the model and compute log probs for the choice token
                 with torch.no_grad():
-                    outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=False, output_hidden_states=False)
-                    logits = outputs.logits[:, -1, :].cpu()  # Last token's logits
+                    # outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=False, output_hidden_states=False)
+                    # logits = outputs.logits[:, -1, :].cpu()  # Last token's logits
+                    logits = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=False, output_hidden_states=False).\
+                                logits[:, -1, :].cpu()  # Last token's logits
 
                 log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
 
