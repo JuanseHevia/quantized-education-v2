@@ -34,7 +34,7 @@ def initialize_collection(kb_path:str , distance_fn='cosine', embedding_fn=embed
                                                  metadata={"hnsw:space": distance_fn}) 
     return collection
 
-def process_pdf_doc(chunks, preffix, summarize: bool=False):
+def process_pdf_doc(collection, chunks, preffix, summarize: bool=False):
     """
     Load PDF function and split in chunks.
     Optionally, summarize the content
@@ -93,6 +93,7 @@ if __name__ == "__main__":
 
     collection = initialize_collection(kb_path=args.kb_path,
                                        distance_fn=args.distance_fn)
+    
     for bookname in booknames:
         _name = os.path.basename(bookname).split(".")[0]
         print(f"Processing: {_name}")
@@ -100,8 +101,8 @@ if __name__ == "__main__":
                                         chunk_size=args.chunk_size)
         
         print(f"Adding {len(chunks)} chunks from {_name}!")
-        process_pdf_doc(chunks=chunks, preffix=_name)
+        process_pdf_doc(collection=collection, chunks=chunks, preffix=_name)
 
     end = time.time()
 
-    print(f"Database built successfully! - {(start - end) / 60} seconds")
+    print(f"Database built successfully! - {(start - end) / 60} minutes")
