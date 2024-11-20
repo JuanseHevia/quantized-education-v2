@@ -15,7 +15,7 @@ def evaluate_mmlu(args):
     # Instantiate dataset
     dataset = benchmarks.BenchmarkDataset(name="cais/mmlu", subtasks=SUBTASKS,
                                           sample_size=args.sample_size, seed=args.seed,
-                                          device=args.device)
+                                          device=args.device, top_k=args.top_k)
     dataset.load_model(
             hf_path=MODEL,
             rag=args.rag,
@@ -40,6 +40,7 @@ if __name__ == "__main__":
     parser.add_argument("--kb_path", type=str, default="./rag/knowledgebase")
     parser.add_argument("--result_path", type=str, default="./results")
     parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--top_k", type=int, default=2)
     args = parser.parse_args()
 
     assert os.path.exists(args.kb_path), "Knowledgebase path does not exist."
