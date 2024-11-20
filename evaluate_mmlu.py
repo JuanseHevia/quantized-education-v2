@@ -28,7 +28,7 @@ def evaluate_mmlu(args):
 
     # save results and score as JSON object
     today = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    with open(f"{args.log_path}/{today}-mmlu_results.json", "w") as f:
+    with open(f"{args.result_path}/{today}-mmlu_results.json", "w") as f:
         json.dump({"accuracy": acc, "subset": subset}, f)
 
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("--rag", type=bool, default=True)
     parser.add_argument("--kb_path", type=str, default="./rag/knowledgebase")
     parser.add_argument("--result_path", type=str, default="./results")
-    parser.add_argument("--device", type=str, default="mps")
+    parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
 
     assert os.path.exists(args.kb_path), "Knowledgebase path does not exist."
