@@ -4,7 +4,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from dataclasses import dataclass, field
-from commons.retrieval import Retriever
+from commons.retrieval import ChromaRetriever
 
 @dataclass
 class BenchmarkDataset:
@@ -14,17 +14,15 @@ class BenchmarkDataset:
     seed : int = 42
     CHOICES = ["A", "B", "C", "D"]
     device: str = "cpu"
+    top_k: int = 2
 
     def __post_init__(self):
-        self.dataset = load_dataset(self.name, "all")
-        if len(self.subtasks) > 0:
-            self.dataset = self.dataset.filter(lambda x: x["subject"] in self.subtasks)
+        self.dataset = load_dataset(self.name, "all").filter(lambda x: x["subject"] in self.subtasks)
+        self.test_set = self.dataset["test"]
+        if self.sample_size:
+            self.test_set = self.test_set.shuffle(seed=self.seed).select(list(range(self.sample_size)))
         
-        self.test_set = self.dataset['test'].shuffle(seed=self.seed)
-
-
-
-    def load_model(self, hf_path, rag=False, pdf_path=None):
+    def load_model(self, hf_path, rag=False, rag_path=None):
         """
         Load the tokenizer and model from the given Hugging Face path.
 
@@ -44,7 +42,8 @@ class BenchmarkDataset:
             self.choice_ids_mapping[choice_token] = choice_ids[0,0]
         
         if rag:
-            self.rag_pipeline = Retriever(pdf_path, device=self.device)
+            # self.rag_pipeline = Retriever(pdf_path, device=self.device)
+            self.rag_pipeline = ChromaRetriever(knowledgebase_path=rag_path, )
             print("RAG pipeline loaded successfully.")
 
     def _format_example(self,example):
@@ -114,12 +113,12 @@ class BenchmarkDataset:
             total = 0
 
             # Shuffle and sample the test set
-            sampled_subset = self.test_set.shuffle(seed=self.seed).select(range(self.sample_size))
+            sampled_subset = self.test_set
 
             for example in tqdm(sampled_subset, desc=f"Evaluating - So far gotten {correct} out of {total}"):
                 # Format the question and choices into a single prompt
                 if self.rag:
-                    example['context'] = self.rag_pipeline.retrieve_documents(example['question'])
+                    example['context'] = self.rag_pipeline.retrieve_documents(example['question'], top_k=self.top_k)
                 prompt = self._format_example(example)
                 
                 # Tokenize the prompt
