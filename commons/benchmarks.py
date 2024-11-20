@@ -10,7 +10,7 @@ from commons.retrieval import ChromaRetriever
 class BenchmarkDataset:
     name: str = "cais/mmlu"
     subtasks: List = field(default_factory=list)
-    sample_size : int = 100
+    sample_size : int = -1
     seed : int = 42
     CHOICES = ["A", "B", "C", "D"]
     device: str = "cpu"
@@ -19,7 +19,7 @@ class BenchmarkDataset:
     def __post_init__(self):
         self.dataset = load_dataset(self.name, "all").filter(lambda x: x["subject"] in self.subtasks)
         self.test_set = self.dataset["test"]
-        if self.sample_size:
+        if self.sample_size > 0:
             self.test_set = self.test_set.shuffle(seed=self.seed).select(list(range(self.sample_size)))
         
     def load_model(self, hf_path, rag=False, rag_path=None):
@@ -111,11 +111,9 @@ class BenchmarkDataset:
 
             correct = 0
             total = 0
+            correct_qs = []
 
-            # Shuffle and sample the test set
-            sampled_subset = self.test_set
-
-            for example in tqdm(sampled_subset, desc=f"Evaluating - So far gotten {correct} out of {total}"):
+            for example in tqdm(self.test_set, desc=f"Evaluating - So far gotten {correct} out of {total}"):
                 # Format the question and choices into a single prompt
                 if self.rag:
                     example['context'] = self.rag_pipeline.retrieve_documents(example['question'], top_k=self.top_k)
@@ -151,9 +149,13 @@ class BenchmarkDataset:
                 correct_answer = example["answer"]
                 if predicted_choice_idx == correct_answer:
                     correct += 1
+                    correct_qs.append(1)
+                else:
+                    correct_qs.append(0)
+
                 total += 1
 
             # Calculate accuracy
             accuracy = correct / total if total > 0 else 0
             print(f"Accuracy: {accuracy * 100:.2f}%")
-            return accuracy, sampled_subset
+            return accuracy, self.test_set, correct_qs

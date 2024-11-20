@@ -22,14 +22,19 @@ def evaluate_mmlu(args):
             rag_path=args.kb_path)
     
     # run evaluation
-    acc, subset = dataset.evaluate()
+    acc, subset, per_question_res = dataset.evaluate()
     print("Accuracy: ", acc)
     print("Subset: ", subset)
 
     # save results and score as JSON object
     today = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     with open(f"{args.result_path}/{today}-mmlu_results.json", "w") as f:
-        json.dump({"accuracy": acc, "subset": subset}, f)
+        _obj = {
+            "accuracy": acc,
+            "questions": subset["questions"],
+            "results": per_question_res
+        }
+        json.dump(_obj, f)
 
 
 if __name__ == "__main__":
