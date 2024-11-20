@@ -34,7 +34,7 @@ def initialize_collection(kb_path:str , distance_fn='cosine', embedding_fn=embed
                                                  metadata={"hnsw:space": distance_fn}) 
     return collection
 
-def process_pdf_doc(chunks, summarize: bool=False):
+def process_pdf_doc(chunks, preffix, summarize: bool=False):
     """
     Load PDF function and split in chunks.
     Optionally, summarize the content
@@ -45,7 +45,7 @@ def process_pdf_doc(chunks, summarize: bool=False):
         raise NotImplementedError("Summarization not implemented yet")
     
     # add IDs 
-    ids = [str(idx) for idx in list(range(len(chunks)))]
+    ids = [f"{preffix}-{idx}" for idx in list(range(len(chunks)))]
 
     # add chunks to collection
     for chunk_id, chunk in tqdm(zip(ids, chunks), total=len(chunks)):
@@ -94,10 +94,13 @@ if __name__ == "__main__":
     collection = initialize_collection(kb_path=args.kb_path,
                                        distance_fn=args.distance_fn)
     for bookname in booknames:
+        _name = os.path.basename(bookname).split(".")[0]
+        print(f"Processing: {_name}")
         chunks = extract_text_from_pdf(os.path.join(DATA_PATH, bookname),
                                         chunk_size=args.chunk_size)
-        print(f"Added {len(chunks)} chunks from {os.path.basename(bookname)}!")
-        process_pdf_doc(chunks=chunks)
+        
+        print(f"Adding {len(chunks)} chunks from {_name}!")
+        process_pdf_doc(chunks=chunks, preffix=_name)
 
     end = time.time()
 
