@@ -25,27 +25,18 @@ class ChromaRetriever:
         self.client = chromadb.PersistentClient(path=knowledgebase_path)
         self.collection = self.client.get_collection(collection_name)
 
-    def retrieve_documents(self, query: str,
-                           top_k: int = 2) -> list:
-        """
-        Retrieve documents from the ChromaDB collection.
-        """
-        # first element because we only have one batch
-        results = self.collection.query(query, top_k=top_k)[0] 
-        return results
-
-    def print_results(results: list) -> None:
+    def print_results(self, results: list) -> None:
         """
         Print the results of the query.
         """
         for idx, result in enumerate(results):
             print(f"Result {idx+1}: {result['document']}")
 
-    def format_results(results: list) -> list:
+    def format_results(self, results: list) -> list:
         """
         Format the results of the query into a list of strings separated by newlines.
         """
-        return '\n'.join([result['document'] for result in results])
+        return '\n'.join([result for result in results])
     
     def retrieve_documents(self, query:str,
                            format_results:bool=True,
@@ -54,9 +45,9 @@ class ChromaRetriever:
         Retrieve relevant documents based on the query and return
         a formatted string representation of the results if needed.
         """
-        results = self.collection.query(query, top_k=top_k)
+        results = self.collection.query(query_texts=[query], n_results=top_k)
         if format_results:
-            return self.format_results(results)
+            return self.format_results(results["documents"][0])
 
 class Retriever:
     def __init__(self, pdf_path,
