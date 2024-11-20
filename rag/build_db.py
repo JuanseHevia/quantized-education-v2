@@ -1,3 +1,4 @@
+import time
 import chromadb
 import os 
 import torch 
@@ -8,7 +9,7 @@ import argparse
 
 
 DATA_PATH = "./data"
-KB_PATH = ".knowledgebase"
+KB_PATH = "knowledgebase"
 DISTANCE_FN = "cosine" # options: "l2", "cosine", "ip"
 EMBEDDING_FN = embedding_functions.DefaultEmbeddingFunction()
 
@@ -52,7 +53,6 @@ def process_pdf_doc(chunks, summarize: bool=False):
         collection.add(documents=[chunk],
                        ids=[chunk_id],)
 
-    print(f"Added {len(chunks)} chunks from {os.path.basename(path)}!")
 
 def extract_text_from_pdf(pdf_path, chunk_size=300):
     # Open the PDF
@@ -88,12 +88,17 @@ if __name__ == "__main__":
     print("Number of documents found: ", len(booknames))
 
     # get chunks
+    start = time.time()
+
 
     collection = initialize_collection(kb_path=args.kb_path,
                                        distance_fn=args.distance_fn)
     for bookname in booknames:
         chunks = extract_text_from_pdf(os.path.join(DATA_PATH, bookname),
                                         chunk_size=args.chunk_size)
+        print(f"Added {len(chunks)} chunks from {os.path.basename(bookname)}!")
         process_pdf_doc(chunks=chunks)
 
-    print("Database built successfully!")
+    end = time.time()
+
+    print(f"Database built successfully! - {(start - end) / 60} seconds")
