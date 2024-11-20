@@ -1,3 +1,7 @@
 *.pdf
 *.sqlite3
 rag/knowledgebase/*
+*.zip
+rag/kb300/*
+rag/kb500/*
+commons/__pycache__/*

@@ -1,3 +1,4 @@
+import time
 import chromadb
 import os 
 import torch 
@@ -8,7 +9,7 @@ import argparse
 
 
 DATA_PATH = "./data"
-KB_PATH = ".knowledgebase"
+KB_PATH = "knowledgebase"
 DISTANCE_FN = "cosine" # options: "l2", "cosine", "ip"
 EMBEDDING_FN = embedding_functions.DefaultEmbeddingFunction()
 
@@ -33,7 +34,7 @@ def initialize_collection(kb_path:str , distance_fn='cosine', embedding_fn=embed
                                                  metadata={"hnsw:space": distance_fn}) 
     return collection
 
-def process_pdf_doc(chunks, summarize: bool=False):
+def process_pdf_doc(collection, chunks, preffix, summarize: bool=False):
     """
     Load PDF function and split in chunks.
     Optionally, summarize the content
@@ -44,7 +45,7 @@ def process_pdf_doc(chunks, summarize: bool=False):
         raise NotImplementedError("Summarization not implemented yet")
     
     # add IDs 
-    ids = [str(idx) for idx in list(range(len(chunks)))]
+    ids = [f"{preffix}-{idx}" for idx in list(range(len(chunks)))]
 
     # add chunks to collection
     for chunk_id, chunk in tqdm(zip(ids, chunks), total=len(chunks)):
@@ -52,7 +53,6 @@ def process_pdf_doc(chunks, summarize: bool=False):
         collection.add(documents=[chunk],
                        ids=[chunk_id],)
 
-    print(f"Added {len(chunks)} chunks from {os.path.basename(path)}!")
 
 def extract_text_from_pdf(pdf_path, chunk_size=300):
     # Open the PDF
@@ -88,12 +88,21 @@ if __name__ == "__main__":
     print("Number of documents found: ", len(booknames))
 
     # get chunks
+    start = time.time()
+
 
     collection = initialize_collection(kb_path=args.kb_path,
                                        distance_fn=args.distance_fn)
+    
     for bookname in booknames:
+        _name = os.path.basename(bookname).split(".")[0]
+        print(f"Processing: {_name}")
         chunks = extract_text_from_pdf(os.path.join(DATA_PATH, bookname),
                                         chunk_size=args.chunk_size)
-        process_pdf_doc(chunks=chunks)
+        
+        print(f"Adding {len(chunks)} chunks from {_name}!")
+        process_pdf_doc(collection=collection, chunks=chunks, preffix=_name)
 
-    print("Database built successfully!")
+    end = time.time()
+
+    print(f"Database built successfully! - {(start - end) / 60} minutes")

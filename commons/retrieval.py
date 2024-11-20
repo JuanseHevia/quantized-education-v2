@@ -2,15 +2,47 @@
 
 import fitz  # PyMuPDF
 import faiss
-import numpy as np
 from sentence_transformers import SentenceTransformer
-from transformers import pipeline
 import importlib
 import numpy as np
-import os
 import commons.model as model
-importlib.reload(model)
+import chromadb
 
+class ChromaRetriever:
+    """
+    Retriever implementation using a ChromaDB database.
+    """
+
+    def __init__(self, knowledgebase_path: str,
+                 collection_name: str = "books") -> None:
+        
+        # initialize client
+        self.client = chromadb.PersistentClient(path=knowledgebase_path)
+        self.collection = self.client.get_collection(collection_name)
+
+    def print_results(self, results: list) -> None:
+        """
+        Print the results of the query.
+        """
+        for idx, result in enumerate(results):
+            print(f"Result {idx+1}: {result['document']}")
+
+    def format_results(self, results: list) -> list:
+        """
+        Format the results of the query into a list of strings separated by newlines.
+        """
+        return '\n'.join([result for result in results])
+    
+    def retrieve_documents(self, query:str,
+                           format_results:bool=True,
+                           top_k: int = 2) -> str:
+        """
+        Retrieve relevant documents based on the query and return
+        a formatted string representation of the results if needed.
+        """
+        results = self.collection.query(query_texts=[query], n_results=top_k)
+        if format_results:
+            return self.format_results(results["documents"][0])
 
 class Retriever:
     def __init__(self, pdf_path,
