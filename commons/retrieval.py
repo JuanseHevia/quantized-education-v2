@@ -9,8 +9,54 @@ import importlib
 import numpy as np
 import os
 import commons.model as model
+import chromadb
+
 importlib.reload(model)
 
+class ChromaRetriever:
+    """
+    Retriever implementation using a ChromaDB database.
+    """
+
+    def __init__(self, knowledgebase_path: str,
+                 collection_name: str = "books") -> None:
+        
+        # initialize client
+        self.client = chromadb.PersistentClient(path=knowledgebase_path)
+        self.collection = self.client.get_collection(collection_name)
+
+    def retrieve_documents(self, query: str,
+                           top_k: int = 2) -> list:
+        """
+        Retrieve documents from the ChromaDB collection.
+        """
+        # first element because we only have one batch
+        results = self.collection.query(query, top_k=top_k)[0] 
+        return results
+
+    def print_results(results: list) -> None:
+        """
+        Print the results of the query.
+        """
+        for idx, result in enumerate(results):
+            print(f"Result {idx+1}: {result['document']}")
+
+    def format_results(results: list) -> list:
+        """
+        Format the results of the query into a list of strings separated by newlines.
+        """
+        return '\n'.join([result['document'] for result in results])
+    
+    def retrieve_documents(self, query:str,
+                           format_results:bool=True,
+                           top_k: int = 2) -> str:
+        """
+        Retrieve relevant documents based on the query and return
+        a formatted string representation of the results if needed.
+        """
+        results = self.collection.query(query, top_k=top_k)
+        if format_results:
+            return self.format_results(results)
 
 class Retriever:
     def __init__(self, pdf_path,
