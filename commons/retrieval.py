@@ -2,16 +2,11 @@
 
 import fitz  # PyMuPDF
 import faiss
-import numpy as np
 from sentence_transformers import SentenceTransformer
-from transformers import pipeline
 import importlib
 import numpy as np
-import os
 import commons.model as model
 import chromadb
-
-importlib.reload(model)
 
 class ChromaRetriever:
     """
