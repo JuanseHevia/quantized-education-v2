@@ -31,7 +31,7 @@ def evaluate_mmlu(args):
     with open(f"{args.result_path}/{today}-mmlu_results.json", "w") as f:
         _obj = {
             "accuracy": acc,
-            "questions": subset["questions"],
+            "questions": subset["question"],
             "results": per_question_res
         }
         json.dump(_obj, f)
