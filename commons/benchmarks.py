@@ -1,10 +1,17 @@
 from typing import List
 from datasets import load_dataset
 from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
 from dataclasses import dataclass, field
 from commons.retrieval import ChromaRetriever
+from mlx_lm import load
+
+QUANTIZATION_OPTIONS = {
+'4bit': BitsAndBytesConfig(load_in_4bit=True),
+'8bit': BitsAndBytesConfig(load_in_8bit=True)
+}
+
 
 @dataclass
 class BenchmarkDataset:
@@ -15,6 +22,7 @@ class BenchmarkDataset:
     CHOICES = ["A", "B", "C", "D"]
     device: str = "cpu"
     top_k: int = 2
+    quantization: str = 'none' # change to 4bit or 8bit to quantize the model
 
     def __post_init__(self):
         self.dataset = load_dataset(self.name, "all").filter(lambda x: x["subject"] in self.subtasks)
@@ -32,8 +40,17 @@ class BenchmarkDataset:
         Returns:
             None
         """
+
         self.tokenizer = AutoTokenizer.from_pretrained(hf_path)
-        self.model = AutoModelForCausalLM.from_pretrained(hf_path).to(self.device)
+
+        if self.quantization == 'none':
+            self.model = AutoModelForCausalLM.from_pretrained(hf_path).to(self.device)
+        elif self.quantization in QUANTIZATION_OPTIONS:
+            config = QUANTIZATION_OPTIONS[self.quantization]
+            self.model = AutoModelForCausalLM.from_pretrained(hf_path, quantization_config=config).to(self.device)
+        else:
+            raise Exception(f"Quantization option {self.quantization} not supported.")
+        
         self.rag = rag
         # store the choice IDs based on the chosen tokenizer
         self.choice_ids_mapping = {}
