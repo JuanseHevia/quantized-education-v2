@@ -5,7 +5,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 import torch
 from dataclasses import dataclass, field
 from commons.retrieval import ChromaRetriever
-from mlx_lm import load
 
 QUANTIZATION_OPTIONS = {
 '4bit': BitsAndBytesConfig(load_in_4bit=True),
