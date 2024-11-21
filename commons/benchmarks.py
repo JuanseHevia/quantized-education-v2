@@ -46,7 +46,7 @@ class BenchmarkDataset:
             self.model = AutoModelForCausalLM.from_pretrained(hf_path).to(self.device)
         elif self.quantization in QUANTIZATION_OPTIONS:
             config = QUANTIZATION_OPTIONS[self.quantization]
-            self.model = AutoModelForCausalLM.from_pretrained(hf_path, quantization_config=config).to(self.device)
+            self.model = AutoModelForCausalLM.from_pretrained(hf_path, quantization_config=config)
         else:
             raise Exception(f"Quantization option {self.quantization} not supported.")
         
