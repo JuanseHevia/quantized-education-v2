@@ -29,7 +29,7 @@ class BenchmarkDataset:
         if self.sample_size > 0:
             self.test_set = self.test_set.shuffle(seed=self.seed).select(list(range(self.sample_size)))
         
-    def load_model(self, hf_path, rag=False, rag_path=None):
+    def load_model(self, hf_path, rag=False, rag_path=None, test=False):
         """
         Load the tokenizer and model from the given Hugging Face path.
 
@@ -51,6 +51,7 @@ class BenchmarkDataset:
             raise Exception(f"Quantization option {self.quantization} not supported.")
         
         self.rag = rag
+        self.test = test
         # store the choice IDs based on the chosen tokenizer
         self.choice_ids_mapping = {}
         for choice_token in self.CHOICES:
@@ -133,6 +134,8 @@ class BenchmarkDataset:
                 # Format the question and choices into a single prompt
                 if self.rag:
                     example['context'] = self.rag_pipeline.retrieve_documents(example['question'], top_k=self.top_k)
+                if self.test:
+                    example['context'] = "the correct answer is " + self.CHOICES[example['answer']]
                 prompt = self._format_example(example)
                 
                 # Tokenize the prompt
