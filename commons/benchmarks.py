@@ -75,26 +75,36 @@ class BenchmarkDataset:
 
         """
         question = example['question']
-        choices = [example[f'choices'][i] for i in range(4)]
+        answers = ["A", "B", "C", "D"]
+
+        # Map each letter to its corresponding choice
+        choices = {letter: example['choices'][i] for i, letter in enumerate(answers)}
+
         prompt = f''''{question}
             CHOICES:
-            A) {choices[0]}
-            B) {choices[1]}
-            C) {choices[2]}
-            D) {choices[3]}
+            A) {choices['A']}
+            B) {choices['B']}
+            C) {choices['C']}
+            D) {choices['D']}
 
             Please select the correct answer by providing only the corresponding letter (A, B, C, or D).
             '''
-        if self.rag:
-            context = '\n'.join(example['context'])
+        if self.rag or self.test_letter:
+            context = example['context']
             context_add = f'''\n
             USE THIS INFORMATION TO HELP YOU ANSWER THE QUESTION:\n
             {context}
             '''
+            
+            prompt = prompt + context_add
+        if self.test_written:
+            context_add = f'''\n
+            USE THIS INFORMATION TO HELP YOU ANSWER THE QUESTION:\n
+            The correct answer is {choices[self.CHOICES[example['answer']]]}'''
             prompt = prompt + context_add
 
         prompt += "\nANSWER:"
-
+        #print(prompt)
         return prompt
 
     def _encode(self, examples):
@@ -134,9 +144,10 @@ class BenchmarkDataset:
                 # Format the question and choices into a single prompt
                 if self.rag:
                     example['context'] = self.rag_pipeline.retrieve_documents(example['question'], top_k=self.top_k)
-                if self.test:
-                    example['context'] = "the correct answer is " + self.CHOICES[example['answer']]
+                if self.test_letter:
+                    example['context'] = "the correct answer is " + self.CHOICES[example['answer']] 
                 prompt = self._format_example(example)
+                
                 
                 # Tokenize the prompt
                 inputs = self.tokenizer(prompt, return_tensors="pt")
