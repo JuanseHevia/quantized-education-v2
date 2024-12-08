@@ -29,7 +29,8 @@ class BenchmarkDataset:
         if self.sample_size > 0:
             self.test_set = self.test_set.shuffle(seed=self.seed).select(list(range(self.sample_size)))
         
-    def load_model(self, hf_path, rag=False, rag_path=None, test=False):
+    def load_model(self, hf_path, rag=False, rag_path=None,
+                   test_written=False, test_letter=False):
         """
         Load the tokenizer and model from the given Hugging Face path.
 
@@ -51,7 +52,8 @@ class BenchmarkDataset:
             raise Exception(f"Quantization option {self.quantization} not supported.")
         
         self.rag = rag
-        self.test = test
+        self.test_written = test_written
+        self.test_letter = test_letter
         # store the choice IDs based on the chosen tokenizer
         self.choice_ids_mapping = {}
         for choice_token in self.CHOICES:
