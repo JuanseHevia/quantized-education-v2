@@ -11,6 +11,14 @@
             "program": "evaluate_mmlu.py",
             "console": "integratedTerminal",
             "args": "--sample_size 10 --kb_path 'rag/kb300' --device cpu"
+        },
+        {
+            "name": "Evaluation MMLU with Answer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "evaluate_mmlu.py",
+            "console": "integratedTerminal",
+            "args": "--sample_size 10 --kb_path 'rag/kb300' --device cpu --add_answer True"
         }
     ]
 }
