@@ -6,3 +6,4 @@ rag/kb300/*
 rag/kb500/*
 commons/__pycache__/*
 results/*
+rag/.DS_Store
