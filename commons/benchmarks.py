@@ -22,6 +22,8 @@ class BenchmarkDataset:
     device: str = "cpu"
     top_k: int = 2
     quantization: str = 'none' # change to 4bit or 8bit to quantize the model
+    add_answer: bool = False
+
 
     def __post_init__(self):
         self.dataset = load_dataset(self.name, "all").filter(lambda x: x["subject"] in self.subtasks)
@@ -85,7 +87,12 @@ class BenchmarkDataset:
             Please select the correct answer by providing only the corresponding letter (A, B, C, or D).
             '''
         if self.rag:
-            context = '\n'.join(example['context'])
+            context = example.get('context', None)
+            answer = example.get('answer', None)
+
+            if self.add_answer:
+                prompt += f'\nThe correct answer is: {self.CHOICES[answer]}'
+
             context_add = f'''\n
             USE THIS INFORMATION TO HELP YOU ANSWER THE QUESTION:\n
             {context}
@@ -147,7 +154,10 @@ class BenchmarkDataset:
                 with torch.no_grad():
                     # outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=False, output_hidden_states=False)
                     # logits = outputs.logits[:, -1, :].cpu()  # Last token's logits
-                    logits = self.model(input_ids=input_ids, attention_mask=attention_mask, use_cache=False, output_hidden_states=False).\
+                    logits = self.model(input_ids=input_ids, 
+                                        attention_mask=attention_mask, 
+                                        use_cache=False, 
+                                        output_hidden_states=False).\
                                 logits[:, -1, :].cpu()  # Last token's logits
 
                 log_probs = torch.nn.functional.log_softmax(logits, dim=-1)

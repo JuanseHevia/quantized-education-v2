@@ -27,7 +27,8 @@ def evaluate_mmlu(args, use_rag: bool):
                                           seed=args.seed,
                                           device=args.device, 
                                           top_k=args.top_k,
-                                          quantization=args.quantization)
+                                          quantization=args.quantization,
+                                          add_answer=args.add_answer)
     dataset.load_model(
             hf_path=MODEL,
             rag=args.rag,
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--top_k", type=int, default=2)
     parser.add_argument("--quantization", type=str, default="none")
+    parser.add_argument("--add_answer", type=bool, default=False, help="Add the answer to the question to debug.")
     args = parser.parse_args()
 
     _use_rag = args.rag.lower() == "true"
