@@ -7,3 +7,4 @@ rag/kb500/*
 commons/__pycache__/*
 results/*
 rag/.DS_Store
+commons/__pycache__/benchmarks.cpython-311.pyc
