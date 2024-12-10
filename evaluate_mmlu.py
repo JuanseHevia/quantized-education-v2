@@ -6,7 +6,7 @@ import json
 
 # MODEL = "HuggingFaceTB/SmolLM2-1.7B"
 # MODEL = "HuggingFaceTB/SmolLM2-135M"
-MODEL = "HuggingFaceTB/SmolLM-135M"
+# MODEL = "HuggingFaceTB/SmolLM-135M"
 SUBTASKS = ["college_biology", "high_school_biology"]
 
 def evaluate_mmlu(args, use_rag: bool):
@@ -28,10 +28,10 @@ def evaluate_mmlu(args, use_rag: bool):
                                           device=args.device, 
                                           top_k=args.top_k,
                                           quantization=args.quantization,
+                                          rag=use_rag,
                                           add_answer=args.add_answer)
     dataset.load_model(
-            hf_path=MODEL,
-            rag=args.rag,
+            hf_path=args.model_path,
             rag_path=args.kb_path)
     
     # run evaluation
@@ -53,6 +53,7 @@ def evaluate_mmlu(args, use_rag: bool):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample_size", type=int, default=-1)
+    parser.add_argument("--model_path", type=str, default="HuggingFaceTB/SmolLM2-1.7B")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--rag", type=str, default="True")
     parser.add_argument("--kb_path", type=str, default="./rag/knowledgebase")
@@ -64,10 +65,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     _use_rag = args.rag.lower() == "true"
+    print(f"Using RAG pipeline: {_use_rag}")
 
     if _use_rag:
         assert os.path.exists(args.kb_path), "Knowledgebase path does not exist."
-        print("Using RAG pipeline.")
+        print("Loaded RAG pipeline.")
 
     os.makedirs(args.result_path, exist_ok=True)
     evaluate_mmlu(args, use_rag = _use_rag)

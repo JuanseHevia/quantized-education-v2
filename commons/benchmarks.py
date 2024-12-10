@@ -23,6 +23,7 @@ class BenchmarkDataset:
     top_k: int = 2
     quantization: str = 'none' # change to 4bit or 8bit to quantize the model
     add_answer: bool = False
+    rag: bool = False
 
 
     def __post_init__(self):
@@ -52,14 +53,13 @@ class BenchmarkDataset:
         else:
             raise Exception(f"Quantization option {self.quantization} not supported.")
         
-        self.rag = rag
         # store the choice IDs based on the chosen tokenizer
         self.choice_ids_mapping = {}
         for choice_token in self.CHOICES:
             choice_ids = self.tokenizer(choice_token, return_tensors="pt")["input_ids"]
             self.choice_ids_mapping[choice_token] = choice_ids[0,0]
         
-        if rag:
+        if self.rag:
             # self.rag_pipeline = Retriever(pdf_path, device=self.device)
             self.rag_pipeline = ChromaRetriever(knowledgebase_path=rag_path, )
             print("RAG pipeline loaded successfully.")
