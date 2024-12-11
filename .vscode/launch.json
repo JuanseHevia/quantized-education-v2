@@ -13,12 +13,28 @@
             "args": "--sample_size 10 --kb_path 'rag/kb300' --device cpu"
         },
         {
-            "name": "Evaluation MMLU with Answer",
+            "name": "Evaluation MMLU with Answer (LETTER)",
             "type": "debugpy",
             "request": "launch",
             "program": "evaluate_mmlu.py",
             "console": "integratedTerminal",
-            "args": "--sample_size 10 --kb_path 'rag/kb300' --device cpu --add_answer True"
+            "args": "--sample_size 10 --kb_path 'rag/kb300' --device cpu --add_answer True --answer_type 'letter' "
+        },
+        {
+            "name": "Evaluation MMLU with Answer (TEXT)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "evaluate_mmlu.py",
+            "console": "integratedTerminal",
+            "args": "--sample_size 10 --kb_path 'rag/kb300' --device cpu --add_answer True --answer_type 'text' "
+        },
+        {
+            "name": "Evaluation MMLU with Answer (TEXT) no RAG",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "evaluate_mmlu.py",
+            "console": "integratedTerminal",
+            "args": "--sample_size 10 --device cpu --rag False --add_answer True --answer_type 'text' "
         },
         {
             "name": "Evaluation MMLU no RAG",
