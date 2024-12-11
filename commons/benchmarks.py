@@ -24,6 +24,7 @@ class BenchmarkDataset:
     quantization: str = 'none' # change to 4bit or 8bit to quantize the model
     add_answer: bool = False
     rag: bool = False
+    answer_type: str = None
 
 
     def __post_init__(self):
@@ -31,8 +32,13 @@ class BenchmarkDataset:
         self.test_set = self.dataset["test"]
         if self.sample_size > 0:
             self.test_set = self.test_set.shuffle(seed=self.seed).select(list(range(self.sample_size)))
+
+        assert (not self.answer_type or self.answer_type in ["letter", "text"]), "Answer type must be either 'letter', 'text' or None."
+
+        if self.answer_type:
+            print("\nWARNING: Adding answer to question for debugging purposes.\n\n")
         
-    def load_model(self, hf_path, rag=False, rag_path=None):
+    def load_model(self, hf_path, rag_path=None):
         """
         Load the tokenizer and model from the given Hugging Face path.
 
@@ -86,12 +92,21 @@ class BenchmarkDataset:
 
             Please select the correct answer by providing only the corresponding letter (A, B, C, or D).
             '''
+        
+        if self.add_answer:
+            answer = example.get('answer', None)
+            
+            assert self.answer_type in ["text", "letter"], "Answer type must be specified as 'text' or 'letter' to add answer to question."
+            
+            if self.answer_type == 'letter':
+                _ans = self.CHOICES[answer]
+            elif self.answer_type == 'text':
+                _ans = choices[answer]
+            
+            prompt += f'\nThe correct answer is: {_ans}'
+
         if self.rag:
             context = example.get('context', None)
-            answer = example.get('answer', None)
-
-            if self.add_answer:
-                prompt += f'\nThe correct answer is: {self.CHOICES[answer]}'
 
             context_add = f'''\n
             USE THIS INFORMATION TO HELP YOU ANSWER THE QUESTION:\n

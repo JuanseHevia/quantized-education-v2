@@ -29,7 +29,8 @@ def evaluate_mmlu(args, use_rag: bool):
                                           top_k=args.top_k,
                                           quantization=args.quantization,
                                           rag=use_rag,
-                                          add_answer=args.add_answer)
+                                          add_answer=args.add_answer,
+                                          answer_type=args.answer_type)
     dataset.load_model(
             hf_path=args.model_path,
             rag_path=args.kb_path)
@@ -62,6 +63,8 @@ if __name__ == "__main__":
     parser.add_argument("--top_k", type=int, default=2)
     parser.add_argument("--quantization", type=str, default="none")
     parser.add_argument("--add_answer", type=bool, default=False, help="Add the answer to the question to debug.")
+    parser.add_argument("--answer_type", type=str, default=None,
+                        help="Type of answer to add to the question. Can be either 'letter' (A,B,C,D) or 'text' (full answer text).")
     args = parser.parse_args()
 
     _use_rag = args.rag.lower() == "true"
